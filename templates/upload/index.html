@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <title>Excel Data Processor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --secondary-dark: #059669;
+            --secondary-light: #34D399;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray: #9CA3AF;
+            --gray-light: #F3F4F6;
+            --gray-dark: #4B5563;
+            --border: #E5E7EB;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            --body-bg: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --transition: all 0.3s ease;
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Header & Navigation */
+        .app-header {
+            height: var(--header-height);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--dark);
+            text-decoration: none;
+        }
+
+        .app-header .logo i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        .app-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .app-nav .nav-link {
+            color: var(--gray-dark);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .app-nav .nav-link:hover {
+            color: var(--primary);
+            background-color: var(--gray-light);
+        }
+
+        .app-nav .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .app-nav .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Main Content */
+        .main-container {
+            padding-top: calc(var(--header-height) + 2rem);
+            padding-bottom: 3rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .page-subtitle {
+            font-weight: 400;
+            font-size: 1.125rem;
+            color: var(--gray-dark);
+            margin-bottom: 2rem;
+        }
+
+        /* Upload Area */
+        .upload-section {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .upload-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .upload-area {
+            flex: 1;
+            min-width: 300px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .upload-area.highlight {
+            border-color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .upload-area h3 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .upload-area p {
+            color: var(--gray-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .hint {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-top: 1rem;
+        }
+
+        /* Selected Files */
+        .selected-files {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+        }
+
+        .selected-files h3 {
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        #file-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .file-item:hover {
+            background-color: var(--gray-light);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item i {
+            margin-right: 1rem;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            display: block;
+            color: var(--dark);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-size {
+            display: block;
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .remove-btn:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-dark);
+        }
+
+        .empty-message {
+            color: var(--gray);
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-light);
+            color: var(--gray-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--gray);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        /* Footer */
+        .app-footer {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-dark);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            z-index: 99;
+            padding: 1rem;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .mobile-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .mobile-menu .nav-link {
+            display: block;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        .mobile-menu .nav-link:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            max-width: 350px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.3s ease forwards;
+        }
+
+        .notification::before {
+            content: "\f00c";
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 0.75rem;
+        }
+
+        .notification:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .upload-container {
+                flex-direction: column;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .app-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <a href="/" class="logo">
+            <i class="fas fa-database"></i>
+            <span>Data Management System</span>
+        </a>
+        
+        <nav class="app-nav">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/upload" class="nav-link active">File Upload</a>
+            <a href="/export" class="nav-link">Data Export</a>
+            <a href="/export/history" class="nav-link">Export History</a>
+            <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+        </nav>
+        
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/upload" class="nav-link active">File Upload</a>
+        <a href="/export" class="nav-link">Data Export</a>
+        <a href="/export/history" class="nav-link">Export History</a>
+        <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+    </div>
+
+    <main class="main-container">
+        <div class="container">
+            <h1 class="page-title">Excel Data Processor</h1>
+            <p class="page-subtitle">Upload Excel files for batch processing into the database</p>
+
+            <section class="upload-section">
+                <div class="upload-container">
+                    <div class="upload-area" id="drop-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drag & Drop Files Here</h3>
+                        <p>or</p>
+                        <label for="file-input" class="btn btn-primary">Browse Files</label>
+                        <input type="file" id="file-input" multiple accept=".xlsx,.xls" hidden>
+                        <p class="hint">Only .xlsx and .xls files are supported</p>
+                    </div>
+                
+                    <div class="selected-files">
+                        <h3>Selected Files</h3>
+                        <ul id="file-list"></ul>
+                        <div class="buttons">
+                            <button class="btn btn-danger" id="clear-btn">
+                                <i class="fas fa-trash"></i> Clear All
+                            </button>
+                            <button class="btn btn-primary" id="upload-btn">
+                                <i class="fas fa-upload"></i> Upload & Process
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>Data Management System &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const fileList = document.getElementById('file-list');
+            const clearBtn = document.getElementById('clear-btn');
+            const uploadBtn = document.getElementById('upload-btn');
+            
+            // State
+            let selectedFiles = [];
+            
+
+            // Event Listeners for Drag & Drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropArea.classList.add('highlight');
+            }
+
+            function unhighlight() {
+                dropArea.classList.remove('highlight');
+            }
+
+            // Handle dropped files
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+
+            // Handle selected files from file input
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+
+            function handleFiles(files) {
+                const validFiles = Array.from(files).filter(file => {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    return ['xlsx', 'xls'].includes(ext);
+                });
+
+                if (validFiles.length === 0) {
+                    showNotification('Please select only Excel files (.xlsx or .xls)', 'error');
+                    return;
+                }
+
+                // Add to selected files
+                selectedFiles = [...selectedFiles, ...validFiles];
+                updateFileList();
+                
+                // Show success notification
+                if (validFiles.length > 0) {
+                    showNotification(`${validFiles.length} file(s) selected successfully`);
+                }
+            }
+
+            function updateFileList() {
+                fileList.innerHTML = '';
+                
+                if (selectedFiles.length === 0) {
+                    fileList.innerHTML = '<li class="empty-message">No files selected</li>';
+                    return;
+                }
+
+                selectedFiles.forEach((file, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'file-item';
+                    
+                    const fileIcon = document.createElement('i');
+                    fileIcon.className = 'fas fa-file-excel';
+                    
+                    const fileInfo = document.createElement('div');
+                    fileInfo.className = 'file-info';
+                    
+                    const fileName = document.createElement('span');
+                    fileName.className = 'file-name';
+                    fileName.textContent = file.name;
+                    
+                    const fileSize = document.createElement('span');
+                    fileSize.className = 'file-size';
+                    fileSize.textContent = formatFileSize(file.size);
+                    
+                    fileInfo.appendChild(fileName);
+                    fileInfo.appendChild(fileSize);
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-btn';
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.onclick = function() {
+                        selectedFiles.splice(index, 1);
+                        updateFileList();
+                    };
+                    
+                    li.appendChild(fileIcon);
+                    li.appendChild(fileInfo);
+                    li.appendChild(removeBtn);
+                    fileList.appendChild(li);
+                });
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Clear selected files
+            clearBtn.addEventListener('click', function() {
+                selectedFiles = [];
+                updateFileList();
+                showNotification('All files cleared');
+            });
+
+            // Upload and process files
+            uploadBtn.addEventListener('click', function() {
+                if (selectedFiles.length === 0) {
+                    showNotification('Please select at least one Excel file to process', 'error');
+                    return;
+                }
+
+                // Create FormData and append files
+                const formData = new FormData();
+                selectedFiles.forEach(file => {
+                    formData.append('files[]', file);
+                });
+
+                // Show loading state
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+                // Upload files
+                fetch('/upload/files', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.job_id) {
+                        showNotification('Files uploaded successfully! Processing started.');
+                        window.location.href = `/upload/status/${data.job_id}`;
+                    } else {
+                        showNotification('Error: ' + (data.error || 'Failed to start processing'), 'error');
+                        resetUploadButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Failed to upload files. Please try again.', 'error');
+                    resetUploadButton();
+                });
+            });
+
+            function resetUploadButton() {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload & Process';
+            }
+
+            function showNotification(message, type = 'success') {
+                // Remove any existing notifications
+                const existingNotifications = document.querySelectorAll('.notification');
+                existingNotifications.forEach(notification => {
+                    notification.remove();
+                });
+
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                
+                if (type === 'error') {
+                    notification.style.backgroundColor = 'var(--danger)';
+                    notification.style.setProperty('--notification-icon', '"\\f00d"');
+                }
+                
+                // Add to document
+                document.body.appendChild(notification);
+                
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateY(20px)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            // Initialize file list
+            updateFileList();
+        });
+        
+    </script>
+</body>
+</html>

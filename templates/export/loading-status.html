@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Status - Data Processing</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --secondary-dark: #059669;
+            --secondary-light: #34D399;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray: #9CA3AF;
+            --gray-light: #F3F4F6;
+            --gray-dark: #4B5563;
+            --border: #E5E7EB;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            --body-bg: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --transition: all 0.3s ease;
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Header & Navigation */
+        .app-header {
+            height: var(--header-height);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--dark);
+            text-decoration: none;
+        }
+
+        .app-header .logo i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        .app-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .app-nav .nav-link {
+            color: var(--gray-dark);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .app-nav .nav-link:hover {
+            color: var(--primary);
+            background-color: var(--gray-light);
+        }
+
+        .app-nav .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .app-nav .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Main Content */
+        .main-container {
+            padding-top: calc(var(--header-height) + 2rem);
+            padding-bottom: 3rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        /* History Buttons */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .history-button {
+            padding: 0.75rem 1rem;
+            background-color: var(--gray-light);
+            color: var(--gray-dark);
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .history-button:hover {
+            background-color: var(--gray);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .history-button i {
+            margin-right: 0.5rem;
+        }
+
+        /* Loading Section */
+        .loading-section {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        #status-message {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+
+        #status-message:before {
+            content: "";
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success);
+            margin-right: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        #status-message.error {
+            color: var(--danger);
+        }
+
+        #status-message.error:before {
+            background-color: var(--danger);
+            animation: none;
+        }
+
+        .progress-bar-container {
+            height: 20px;
+            background-color: var(--gray-light);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow-inner);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            width: 0;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%
+            );
+            background-size: 30px 30px;
+            animation: move 2s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes move {
+            0% { background-position: 0 0; }
+            100% { background-position: 60px 0; }
+        }
+
+        #percentage-complete {
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Export Complete Section */
+        .export-complete {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .export-complete.hidden {
+            display: none;
+        }
+
+        .success-message {
+            margin-bottom: 2rem;
+        }
+
+        .checkmark {
+            font-size: 3.5rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .file-info {
+            background-color: var(--gray-light);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            min-width: 350px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+
+        .file-info p {
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .file-info p span:last-child {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Buttons */
+        .download-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .primary-button {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .primary-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .secondary-button {
+            background-color: var(--gray-light);
+            color: var(--gray-dark);
+        }
+
+        .secondary-button:hover {
+            background-color: var(--gray);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Error Container */
+        .error-message {
+            text-align: center;
+            color: var(--danger);
+            margin-bottom: 1.5rem;
+        }
+
+        .error-message h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Footer */
+        .app-footer {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-dark);
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            z-index: 99;
+            padding: 1rem;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .mobile-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .mobile-menu .nav-link {
+            display: block;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .download-section {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .primary-button, .secondary-button {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .app-nav {
+                display: none;
+            }
+            
+            .file-info {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <a href="/" class="logo">
+            <i class="fas fa-database"></i>
+            <span>Data Management System</span>
+        </a>
+        
+        <nav class="app-nav">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/upload" class="nav-link">File Upload</a>
+            <a href="/export" class="nav-link active">Data Export</a>
+            <a href="/export/history" class="nav-link">Export History</a>
+            <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+        </nav>
+        
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/upload" class="nav-link">File Upload</a>
+        <a href="/export" class="nav-link active">Data Export</a>
+        <a href="/export/history" class="nav-link">Export History</a>
+        <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+    </div>
+
+    <main class="main-container">
+        <div class="container">
+            <div class="header-section">
+                <h1 class="page-title">Export Status</h1>
+                <div class="button-group">
+                    <a href="{{ url_for('export_index') }}" class="history-button">
+                        <i class="fas fa-arrow-left"></i> Back to Filters
+                    </a>
+                    <a href="{{ url_for('export_history') }}" class="history-button">
+                        <i class="fas fa-history"></i> Export History
+                    </a>
+                </div>
+            </div>
+            
+            <div class="loading-section">            
+                <div id="progress-container" class="progress-container">
+                    <div class="progress-info">
+                        <div id="status-message">Preparing export...</div>
+                        <div id="progress-details">
+                            <span id="rows-processed">0</span> of <span id="total-rows">0</span> rows processed
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    
+                    <div id="percentage-complete">0%</div>
+                </div>
+                
+                <div id="export-complete" class="export-complete hidden">
+                    <div class="success-message">
+                        <div class="checkmark"><i class="fas fa-check-circle"></i></div>
+                        <h2 id="completion-message">Export Complete!</h2>
+                        <p id="completion-details">Your data has been successfully exported to CSV.</p>
+                    </div>
+                    
+                    <div class="file-info">
+                        <p>File name: <span id="file-name">export.csv</span></p>
+                        <p>Total rows: <span id="exported-rows">0</span></p>
+                        <p id="export-time"></p>
+                    </div>
+                    
+                    <div class="download-section">
+                        <a id="download-link" href="#" class="btn primary-button">
+                            <i class="fas fa-download"></i> Download CSV
+                        </a>
+                        <a href="{{ url_for('export_index') }}" class="btn secondary-button">
+                            <i class="fas fa-filter"></i> Back to Filters
+                        </a>
+                        <a href="{{ url_for('export_history') }}" class="btn secondary-button">
+                            <i class="fas fa-history"></i> View All Exports
+                        </a>
+                    </div>
+                </div>
+                
+                <div id="error-container" class="export-complete hidden">
+                    <div class="error-message">
+                        <h2>Export Error</h2>
+                        <p id="error-details">There was an error processing your export.</p>
+                    </div>
+                    
+                    <div class="download-section">
+                        <a href="{{ url_for('export_index') }}" class="btn primary-button">
+                            <i class="fas fa-arrow-left"></i> Back to Filters
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>Data Management System &copy; 2025</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('show');
+        }
+        
+        // Check export status on page load
+        document.addEventListener("DOMContentLoaded", function() {
+            checkExportStatus();
+        });
+        
+        function checkExportStatus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const exportId = urlParams.get('export_id');
+            
+            if (!exportId) {
+                showError("Export ID not found. Please return to the filter page and try again.");
+                return;
+            }
+            
+            const statusCheckInterval = setInterval(function() {
+                fetch(`/export/status/${exportId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Server returned ${response.status} ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            clearInterval(statusCheckInterval);
+                            showError(data.error);
+                            return;
+                        }
+                        
+                        updateProgressUI(data);
+                        
+                        // Check if export is complete or already exists
+                        if (data.status === "completed" || data.status === "exists") {
+                            clearInterval(statusCheckInterval);
+                            showCompletedUI(data, exportId);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error checking status:", error);
+                        document.getElementById("status-message").textContent = "Error checking status. Retrying...";
+                        document.getElementById("status-message").classList.add("error");
+                    });
+            }, 1000); // Check every second
+        }
+        
+        function updateProgressUI(data) {
+            // Update rows progress
+            document.getElementById("rows-processed").textContent = data.processed_rows || 0;
+            document.getElementById("total-rows").textContent = data.total_rows || 0;
+            
+            // Calculate and update percentage
+            const percentage = data.total_rows > 0 ? 
+                Math.round((data.processed_rows / data.total_rows) * 100) : 0;
+            
+            document.getElementById("percentage-complete").textContent = percentage + "%";
+            document.getElementById("progress-bar").style.width = percentage + "%";
+            
+            // Update status message based on current state
+            if (data.status === "starting") {
+                document.getElementById("status-message").textContent = "Starting export process...";
+            } else if (data.status === "processing") {
+                document.getElementById("status-message").textContent = "Processing data...";
+            }
+        }
+        
+        function showCompletedUI(data, exportId) {
+            // Hide progress container
+            document.getElementById("progress-container").style.display = "none";
+            
+            // Update file information
+            document.getElementById("file-name").textContent = data.filename || "export.csv";
+            document.getElementById("exported-rows").textContent = data.total_rows || 0;
+            
+            // Add timestamp if available
+            const now = new Date();
+            document.getElementById("export-time").textContent = `Completed: ${now.toLocaleString()}`;
+            
+            // Set download link
+            if (data.status === "exists") {
+                document.getElementById("completion-message").textContent = "File Already Available";
+                document.getElementById("completion-details").textContent = "This export already exists and is ready for download.";
+                document.getElementById("download-link").href = `/export/download_file/${data.filename}`;
+            } else {
+                document.getElementById("download-link").href = `/export/download/${exportId}`;
+            }
+            
+            // Show completion container
+            document.getElementById("export-complete").classList.remove("hidden");
+        }
+        
+        function showError(errorMessage) {
+            // Hide progress container
+            document.getElementById("progress-container").style.display = "none";
+            
+            // Update error details
+            document.getElementById("error-details").textContent = errorMessage || "An unknown error occurred during export.";
+            
+            // Show error container
+            document.getElementById("error-container").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>

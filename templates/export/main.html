@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Data</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --secondary-dark: #059669;
+            --secondary-light: #34D399;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray: #9CA3AF;
+            --gray-light: #F3F4F6;
+            --gray-dark: #4B5563;
+            --border: #E5E7EB;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            --body-bg: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --transition: all 0.3s ease;
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Header & Navigation */
+        .app-header {
+            height: var(--header-height);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--dark);
+            text-decoration: none;
+        }
+
+        .app-header .logo i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        .app-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .app-nav .nav-link {
+            color: var(--gray-dark);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .app-nav .nav-link:hover {
+            color: var(--primary);
+            background-color: var(--gray-light);
+        }
+
+        .app-nav .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .app-nav .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Main Content */
+        .main-container {
+            padding-top: calc(var(--header-height) + 2rem);
+            padding-bottom: 3rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .page-subtitle {
+            font-weight: 400;
+            font-size: 1.125rem;
+            color: var(--gray-dark);
+            margin-bottom: 2rem;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .filter-section:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .filter-title {
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: var(--dark);
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-title i {
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .date-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9375rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            font-size: 0.9375rem;
+            color: var(--dark);
+            background-color: var(--card-bg);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        /* Dropdown styling */
+        .dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-button {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            border-radius: var(--radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+            font-size: 0.9375rem;
+            color: var(--dark);
+        }
+
+        .dropdown-button:hover {
+            background-color: var(--gray-light);
+            border-color: var(--gray);
+        }
+
+        .dropdown-button:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .dropdown-button:after {
+            content: '\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 0.875rem;
+            color: var(--gray);
+            transition: var(--transition);
+        }
+
+        .dropdown-button.active:after {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: var(--card-bg);
+            min-width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: var(--shadow-md);
+            z-index: 10;
+            border-radius: var(--radius);
+            margin-top: 0.25rem;
+            border: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .dropdown-content.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .search-box {
+            position: sticky;
+            top: 0;
+            padding: 0.75rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            z-index: 1;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            box-sizing: border-box;
+            border-radius: var(--radius);
+        }
+
+        .dropdown-content label {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: normal;
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .dropdown-content label:hover {
+            background-color: var(--gray-light);
+        }
+
+        .dropdown-content label input[type="checkbox"] {
+            margin-right: 0.75rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid var(--gray);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            position: relative;
+            cursor: pointer;
+            background-color: var(--card-bg);
+        }
+
+        .dropdown-content label input[type="checkbox"]:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .dropdown-content label input[type="checkbox"]:checked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.65rem;
+        }
+
+        /* Column filters */
+        .column-filters-container {
+            margin-top: 1.5rem;
+        }
+
+        .column-filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1.5rem;
+            margin-bottom: 1.25rem;
+            align-items: end;
+        }
+
+        .filter-element {
+            min-width: 0;
+        }
+
+        .filter-actions {
+            display: flex;
+            align-items: end;
+        }
+
+        /* Buttons */
+        .button-container {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        button i {
+            margin-right: 0.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .primary-button {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
+        }
+
+        .primary-button:hover {
+            background-color: var(--primary-dark);
+            box-shadow: var(--shadow);
+        }
+
+        .secondary-button {
+            background-color: var(--gray-light);
+            color: var(--gray-dark);
+        }
+
+        .secondary-button:hover {
+            background-color: var(--gray);
+            color: white;
+        }
+
+        .remove-filter {
+            background-color: var(--danger);
+            color: white;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+        }
+
+        .remove-filter:hover {
+            background-color: var(--danger-dark);
+        }
+
+        .add-filter {
+            background-color: var(--success);
+            color: white;
+            margin-top: 1rem;
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+        }
+
+        .add-filter:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.25rem;
+            background-color: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            transition: var(--transition);
+            cursor: pointer;
+            transform: translateY(0);
+            display: flex;
+            align-items: center;
+            max-width: 350px;
+        }
+
+        .notification:before {
+            content: "\f00c";
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 0.75rem;
+        }
+
+        .notification:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            z-index: 99;
+            padding: 1rem;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .mobile-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .mobile-menu .nav-link {
+            display: block;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        .mobile-menu .nav-link:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        /* Footer */
+        .app-footer {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-dark);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .column-filter-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <a href="/" class="logo">
+            <i class="fas fa-database"></i>
+            <span>Data Management System</span>
+        </a>
+        
+        <nav class="app-nav">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/upload" class="nav-link">File Upload</a>
+            <a href="/export" class="nav-link active">Data Export</a>
+            <a href="/export/history" class="nav-link">Export History</a>
+            <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+        </nav>
+        
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/upload" class="nav-link">File Upload</a>
+        <a href="/export" class="nav-link active">Data Export</a>
+        <a href="/export/history" class="nav-link">Export History</a>
+        <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+    </div>
+
+    <main class="main-container">
+        <div class="container">
+            <!-- Hidden inputs for applied filter -->
+            <input type="hidden" id="appliedFilter" value="{{ applied_filter or '' }}">
+            <input type="hidden" id="filterFilename" value="{{ filter_filename or '' }}">
+            
+            <h1 class="page-title">Export Data</h1>
+            <p class="page-subtitle">Filter and export your data by applying various criteria</p>
+            
+            <div class="filter-section">
+                <div class="filter-title">
+                    <i class="fas fa-calendar-alt"></i> Date Range
+                </div>
+                <div class="date-filter">
+                    <div class="date-input">
+                        <label for="from_date">From Date:</label>
+                        <input type="date" id="from_date" name="from_date">
+                    </div>
+                    <div class="date-input">
+                        <label for="to_date">To Date:</label>
+                        <input type="date" id="to_date" name="to_date">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-title">
+                    <i class="fas fa-list-alt"></i> Chapter & HS Code Selection
+                </div>
+                <div class="filter-grid">
+                    <div>
+                        <label>Chapter:</label>
+                        <div class="dropdown" id="dropdownContainer">
+                            <button type="button" class="dropdown-button" id="dropdownTitle" onclick="toggleDropdown('chapterDropdown')">Select Chapter...</button>
+                            <div id="chapterDropdown" class="dropdown-content">
+                                <div class="search-box">
+                                    <input type="text" id="chapterSearch" placeholder="Search chapters..." onkeyup="filterOptions('chapterSearch', 'checkbox-container')">
+                                </div>
+                                <label>
+                                    <input type="checkbox" id="selectAllDropdown" onclick="toggleSelectAll(this, 'dropdownContainer')"> <strong>Select All</strong>
+                                </label>
+                                <div id="checkbox-container">
+                                    <!-- Chapters will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label>HS Code:</label>
+                        <div class="dropdown" id="hsDropdownContainer">
+                            <button type="button" class="dropdown-button" id="hsDropdownTitle" onclick="toggleDropdown('hsCodeDropdown')">Select HS Codes...</button>
+                            <div id="hsCodeDropdown" class="dropdown-content">
+                                <div class="search-box">
+                                    <input type="text" id="hsSearch" placeholder="Search HS codes..." onkeyup="filterOptions('hsSearch', 'hs-checkbox-container')">
+                                </div>
+                                <label>
+                                    <input type="checkbox" id="selectAllHsDropdown" onclick="toggleSelectAll(this, 'hsDropdownContainer')"> <strong>Select All</strong>
+                                </label>
+                                <div id="hs-checkbox-container">
+                                    <!-- HS Codes will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-section column-filters-container">
+                <div class="filter-title">
+                    <i class="fas fa-filter"></i> Column Filters
+                </div>
+                <div id="column-filters">
+                    <div class="column-filter-row" id="filter-row-1">
+                        <div class="filter-element">
+                            <label>Column:</label>
+                            <select class="column-select">
+                                <option value="">-- Select Column --</option>
+                                {% for key, value in columns.items() %}
+                                <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="filter-element">
+                            <label>Operator:</label>
+                            <select class="operator-select">
+                                <option value="">-- Select Operator --</option>
+                                <option value="Equals">Equals</option>
+                                <option value="Does Not Equal">Does Not Equal</option>
+                                <option value="Contains">Contains</option>
+                                <option value="Does Not Contain">Does Not Contain</option>
+                                <option value="Begins With">Begins With</option>
+                                <option value="Ends With">Ends With</option>
+                            </select>
+                        </div>
+                        <div class="filter-element">
+                            <label>Value:</label>
+                            <input type="text" class="filter-value" placeholder="Enter value">
+                        </div>
+                        <div class="filter-actions">
+                            <button class="remove-filter" onclick="removeFilter(this)">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button class="add-filter" onclick="addFilter()">
+                    <i class="fas fa-plus"></i> Add Filter
+                </button>
+            </div>
+            
+            <div class="button-container">
+                <button class="secondary-button" onclick="resetFilters()">
+                    <i class="fas fa-undo"></i> Reset All
+                </button>
+                <button id="exportBtn" class="primary-button" onclick="exportToCSV()">
+                    <i class="fas fa-file-export"></i> Export to CSV
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>Data Management System &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchChapters();
+        });
+
+        // Toggle dropdown visibility
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            dropdown.classList.toggle("show");
+            
+            // Add active class to button for styling
+            const buttonId = id === 'chapterDropdown' ? 'dropdownTitle' : 'hsDropdownTitle';
+            document.getElementById(buttonId).classList.toggle("active");
+            
+            // Close other dropdowns
+            const dropdowns = document.querySelectorAll(".dropdown-content");
+            dropdowns.forEach(item => {
+                if (item.id !== id && item.classList.contains("show")) {
+                    item.classList.remove("show");
+                    
+                    // Remove active class from other buttons
+                    const otherButtonId = item.id === 'chapterDropdown' ? 'dropdownTitle' : 'hsDropdownTitle';
+                    document.getElementById(otherButtonId).classList.remove("active");
+                }
+            });
+        }
+
+        // Filter dropdown options based on search input
+        function filterOptions(searchInputId, containerId) {
+            let input = document.getElementById(searchInputId);
+            let filter = input.value.trim().toLowerCase();
+            let container = document.getElementById(containerId);
+            let labels = container.querySelectorAll("label"); // Select all labels
+
+            labels.forEach(label => {
+                let text = label.textContent.trim().toLowerCase();
+                label.style.display = text.includes(filter) ? "" : "none";
+            });
+        }
+
+        // Fetch chapters from the server
+        function fetchChapters() {
+            fetch('/export/get_chapters')
+                .then(response => response.json())
+                .then(data => {
+                    let container = document.getElementById("checkbox-container");
+                    container.innerHTML = "";
+
+                    data.forEach(chapter => {
+                        let label = document.createElement("label");
+                        let checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.value = chapter;
+                        checkbox.classList.add("option");
+                        checkbox.onclick = () => updateSelection('dropdownContainer', 'dropdownTitle', 'chapter');
+
+                        label.appendChild(checkbox);
+                        label.appendChild(document.createTextNode(" " + chapter));
+                        container.appendChild(label);
+                    });
+                    
+                    // Check for applied filter
+                    checkAppliedFilter();
+                })
+                .catch(error => {
+                    console.error('Error fetching chapters:', error);
+                    showNotification('Error loading chapters data. Please try again.', 'error');
+                });
+        }
+
+        // Fetch HS codes based on selected chapters
+        function fetchHSCode(selectedChapters) {
+            let container = document.getElementById("hs-checkbox-container");
+
+            if (selectedChapters.length === 0) {
+                container.innerHTML = "";
+                document.getElementById("hsDropdownTitle").textContent = "Select HS Codes...";
+                return;
+            }
+
+            fetch('/export/get_hs_codes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chapters: selectedChapters })
+            })
+            .then(response => response.json())
+            .then(data => {
+                container.innerHTML = "";
+
+                data.forEach(code => {
+                    let label = document.createElement("label");
+                    let checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.value = code;
+                    checkbox.classList.add("option");
+                    checkbox.onclick = () => updateSelection('hsDropdownContainer', 'hsDropdownTitle');
+
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(" " + code));
+                    container.appendChild(label);
+                });
+
+                updateSelection('hsDropdownContainer', 'hsDropdownTitle'); // Update dropdown title
+                
+                // Check for applied filter HS codes
+                checkAppliedFilterHSCodes();
+            })
+            .catch(error => {
+                console.error('Error fetching HS codes:', error);
+                showNotification('Error loading HS codes. Please try again.', 'error');
+            });
+        }
+
+        // Update dropdown selection text and status
+        function updateSelection(containerId, titleId, type) {
+            let container = document.getElementById(containerId);
+            let checkboxes = container.querySelectorAll(".option");
+            let selectAllCheckbox = container.querySelector("input[type='checkbox'][id^='selectAll']");
+            let title = document.getElementById(titleId);
+            let selectedOptions = [...checkboxes].filter(cb => cb.checked).map(cb => cb.value);
+
+            // Update "Select All" checkbox status
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = selectedOptions.length === checkboxes.length && checkboxes.length > 0;
+            }
+
+            // Update dropdown title text with selected options
+            if (selectedOptions.length > 0) {
+                if (selectedOptions.length <= 3) {
+                    title.textContent = selectedOptions.join(", ");
+                } else {
+                    title.textContent = `${selectedOptions.length} items selected`;
+                }
+            } else {
+                title.textContent = type === 'chapter' ? "Select Chapter..." : "Select HS Codes...";
+            }
+
+            // If changing chapters, update HS code options
+            if (containerId === 'dropdownContainer') {
+                fetchHSCode(selectedOptions);
+            }
+        }
+
+        // Toggle all checkboxes in a dropdown
+        function toggleSelectAll(checkbox, containerId) {
+            let container = document.getElementById(containerId);
+            let checkboxes = container.querySelectorAll(".option");
+            checkboxes.forEach(cb => {
+                if (cb.parentElement.style.display !== "none") { // Only select visible options
+                    cb.checked = checkbox.checked;
+                }
+            });
+            updateSelection(containerId, containerId.includes('hs') ? 'hsDropdownTitle' : 'dropdownTitle', 
+                          containerId.includes('hs') ? 'hs' : 'chapter');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener("click", function(event) {
+            let dropdowns = document.querySelectorAll(".dropdown-content");
+            let buttons = document.querySelectorAll(".dropdown-button");
+            
+            // If a click happens outside both dropdown and button
+            if (!event.target.closest(".dropdown-content") && !event.target.closest(".dropdown-button")) {
+                dropdowns.forEach(dropdown => {
+                    dropdown.classList.remove("show");
+                });
+                buttons.forEach(button => {
+                    button.classList.remove("active");
+                });
+            }
+        });
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            document.getElementById("mobileMenu").classList.toggle("show");
+        }
+
+        // Add a new column filter row
+        function addFilter() {
+            let filtersContainer = document.getElementById("column-filters");
+            let filterCount = filtersContainer.children.length + 1;
+            
+            let newRow = document.createElement("div");
+            newRow.className = "column-filter-row";
+            newRow.id = `filter-row-${filterCount}`;
+            
+            newRow.innerHTML = `
+                <div class="filter-element">
+                    <label>Column:</label>
+                    <select class="column-select">
+                        <option value="">-- Select Column --</option>
+                        ${getColumnOptions()}
+                    </select>
+                </div>
+                <div class="filter-element">
+                    <label>Operator:</label>
+                    <select class="operator-select">
+                        <option value="">-- Select Operator --</option>
+                        <option value="Equals">Equals</option>
+                        <option value="Does Not Equal">Does Not Equal</option>
+                        <option value="Contains">Contains</option>
+                        <option value="Does Not Contain">Does Not Contain</option>
+                        <option value="Begins With">Begins With</option>
+                        <option value="Ends With">Ends With</option>
+                    </select>
+                </div>
+                <div class="filter-element">
+                    <label>Value:</label>
+                    <input type="text" class="filter-value" placeholder="Enter value">
+                </div>
+                <div class="filter-actions">
+                    <button class="remove-filter" onclick="removeFilter(this)">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            `;
+            
+            filtersContainer.appendChild(newRow);
+        }
+
+        // Helper function to get column options from the existing select element
+        function getColumnOptions() {
+            let firstSelect = document.querySelector(".column-select");
+            return firstSelect.innerHTML;
+        }
+
+        // Remove a column filter row
+        function removeFilter(button) {
+            let row = button.closest(".column-filter-row");
+            
+            // Don't remove the last row
+            let filtersContainer = document.getElementById("column-filters");
+            if (filtersContainer.children.length <= 1) {
+                let firstRow = filtersContainer.firstChild;
+                firstRow.querySelector(".column-select").value = "";
+                firstRow.querySelector(".operator-select").value = "";
+                firstRow.querySelector(".filter-value").value = "";
+                return;
+            }
+            
+            row.remove();
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            // Reset date inputs
+            document.getElementById("from_date").value = "";
+            document.getElementById("to_date").value = "";
+            
+            // Reset chapter checkboxes
+            let chapterCheckboxes = document.querySelectorAll("#checkbox-container .option");
+            chapterCheckboxes.forEach(cb => cb.checked = false);
+            document.getElementById("dropdownTitle").textContent = "Select Chapter...";
+            document.getElementById("selectAllDropdown").checked = false;
+            
+            // Reset HS code checkboxes
+            let hsCheckboxes = document.querySelectorAll("#hs-checkbox-container .option");
+            hsCheckboxes.forEach(cb => cb.checked = false);
+            document.getElementById("hsDropdownTitle").textContent = "Select HS Codes...";
+            document.getElementById("selectAllHsDropdown").checked = false;
+            
+            // Reset column filters (keep first row but clear values)
+            let filtersContainer = document.getElementById("column-filters");
+            while (filtersContainer.children.length > 1) {
+                filtersContainer.lastChild.remove();
+            }
+            
+            let firstRow = filtersContainer.firstChild;
+            if (firstRow) {
+                firstRow.querySelector(".column-select").value = "";
+                firstRow.querySelector(".operator-select").value = "";
+                firstRow.querySelector(".filter-value").value = "";
+            }
+            
+            // Show reset notification
+            showNotification('All filters have been reset');
+        }
+
+        // Show notification message
+        function showNotification(message, type = 'success') {
+            // Remove any existing notifications
+            let existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+            
+            // Create notification element
+            const notification = document.createElement("div");
+            notification.className = "notification";
+            
+            if (type === 'error') {
+                notification.style.backgroundColor = 'var(--danger)';
+                notification.style.boxShadow = '0 4px 6px rgba(244, 67, 54, 0.2)';
+                notification.textContent = message;
+                notification.innerHTML = notification.innerHTML.replace(/^\s*/, ''); // Remove any leading space
+            } else {
+                notification.textContent = message;
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.style.opacity = "0";
+                notification.style.transform = "translateY(10px)";
+                setTimeout(() => notification.remove(), 500);
+            }, 5000);
+            
+            // Click to dismiss
+            notification.addEventListener('click', function() {
+                notification.style.opacity = "0";
+                notification.style.transform = "translateY(10px)";
+                setTimeout(() => notification.remove(), 500);
+            });
+        }
+
+        // Function to export data to CSV
+        function exportToCSV() {
+            // Get date values
+            let fromDate = document.getElementById("from_date").value;
+            let toDate = document.getElementById("to_date").value;
+            
+            // Get selected Chapters
+            let selectedChapters = [...document.querySelectorAll("#checkbox-container .option:checked")].map(cb => cb.value);
+            
+            // Get selected HS Codes
+            let selectedHsCodes = [...document.querySelectorAll("#hs-checkbox-container .option:checked")].map(cb => cb.value);
+            
+            // Get column filters
+            let columnFilters = [];
+            let filterRows = document.querySelectorAll(".column-filter-row");
+            
+            filterRows.forEach(row => {
+                let column = row.querySelector(".column-select").value;
+                let operator = row.querySelector(".operator-select").value;
+                let value = row.querySelector(".filter-value").value;
+                
+                if (column && operator && value) {
+                    // Find existing filter for this column or create a new one
+                    let existingFilter = columnFilters.find(f => f.field === column);
+                    
+                    if (existingFilter) {
+                        existingFilter.conditions.push({ operator, value });
+                    } else {
+                        columnFilters.push({
+                            field: column,
+                            conditions: [{ operator, value }]
+                        });
+                    }
+                }
+            });
+            
+            // Validate inputs - require at least one filter type
+            if (!fromDate && !toDate && selectedChapters.length === 0 && selectedHsCodes.length === 0 && columnFilters.length === 0) {
+                showNotification("Please select at least one filter criteria", "error");
+                return;
+            }
+            
+            // Validate date range if partial date is provided
+            if ((fromDate && !toDate) || (!fromDate && toDate)) {
+                showNotification("Please provide both From Date and To Date", "error");
+                return;
+            }
+            
+            // Prepare data for submission
+            let filterData = {
+                from_date: fromDate,
+                to_date: toDate,
+                chapters: selectedChapters,
+                hs_codes: selectedHsCodes,
+                columnFilters: columnFilters
+            };
+            
+            // Disable the export button and show loading state
+            let exportBtn = document.getElementById("exportBtn");
+            let originalText = exportBtn.innerHTML;
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            // Submit data to server
+            fetch('/export/start', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken() // Add CSRF token if needed
+                },
+                body: JSON.stringify(filterData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.export_id) {
+                    window.location.href = `/export/loading_status?export_id=${data.export_id}`;
+                } else {
+                    showNotification(data.error || 'There was an error starting the export', 'error');
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error starting export:', error);
+                showNotification('There was an error starting the export. Please try again.', 'error');
+                exportBtn.disabled = false;
+                exportBtn.innerHTML = originalText;
+            });
+        }
+
+        // Helper function to get CSRF token from cookies
+        function getCSRFToken() {
+            const name = 'csrftoken=';
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const cookieArray = decodedCookie.split(';');
+            
+            for (let i = 0; i < cookieArray.length; i++) {
+                let cookie = cookieArray[i].trim();
+                if (cookie.indexOf(name) === 0) {
+                    return cookie.substring(name.length, cookie.length);
+                }
+            }
+            return '';
+        }
+
+        // Function to check if applied filter exists when page loads
+        function checkAppliedFilter() {
+            const appliedFilterElement = document.getElementById("appliedFilter");
+            if (appliedFilterElement && appliedFilterElement.value) {
+                try {
+                    const filterData = JSON.parse(appliedFilterElement.value);
+                    const filename = document.getElementById("filterFilename")?.value;
+                    
+                    applySavedFilter(filterData, filename);
+                } catch (e) {
+                    console.error("Error parsing applied filter", e);
+                    showNotification("Error applying saved filter", "error");
+                }
+            }
+        }
+
+        // Function to check for applied filter HS codes after chapters have been loaded
+        function checkAppliedFilterHSCodes() {
+            const appliedFilterElement = document.getElementById("appliedFilter");
+            if (appliedFilterElement && appliedFilterElement.value) {
+                try {
+                    const filterData = JSON.parse(appliedFilterElement.value);
+                    if (filterData.hs_codes && filterData.hs_codes.length > 0) {
+                        let hsCheckboxes = document.querySelectorAll("#hs-checkbox-container .option");
+                        hsCheckboxes.forEach(cb => {
+                            if (filterData.hs_codes.includes(cb.value)) {
+                                cb.checked = true;
+                            }
+                        });
+                        updateSelection('hsDropdownContainer', 'hsDropdownTitle');
+                    }
+                } catch (e) {
+                    console.error("Error parsing applied filter for HS codes", e);
+                }
+            }
+        }
+
+        // Apply saved filter from history
+        function applySavedFilter(filterData, filename) {
+            if (!filterData) return;
+            
+            // Reset all filters first
+            resetFilters();
+            
+            // Apply date filters
+            if (filterData.from_date) document.getElementById("from_date").value = filterData.from_date;
+            if (filterData.to_date) document.getElementById("to_date").value = filterData.to_date;
+            
+            // Apply chapter filters
+            if (filterData.chapters && filterData.chapters.length > 0) {
+                let chapterCheckboxes = document.querySelectorAll("#checkbox-container .option");
+                chapterCheckboxes.forEach(cb => {
+                    if (filterData.chapters.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
+                updateSelection('dropdownContainer', 'dropdownTitle', 'chapter');
+            }
+            
+            // Apply column filters
+            if (filterData.columnFilters && filterData.columnFilters.length > 0) {
+                // Remove existing filter rows except the first one
+                let filtersContainer = document.getElementById("column-filters");
+                while (filtersContainer.children.length > 1) {
+                    filtersContainer.lastChild.remove();
+                }
+                
+                let filterRowCount = 0;
+                
+                // Add filter rows as needed
+                for (let i = 0; i < filterData.columnFilters.length; i++) {
+                    const filter = filterData.columnFilters[i];
+                    const conditions = filter.conditions || [];
+                    
+                    // For each condition, populate a filter row
+                    for (let j = 0; j < conditions.length; j++) {
+                        const condition = conditions[j];
+                        
+                        // For first condition, use the existing row
+                        let row;
+                        if (filterRowCount === 0) {
+                            row = filtersContainer.children[0];
+                        } else {
+                            // Add a new filter row for additional conditions
+                            addFilter();
+                            row = filtersContainer.lastChild;
+                        }
+                        
+                        // Populate the row with filter values
+                        row.querySelector(".column-select").value = filter.field;
+                        row.querySelector(".operator-select").value = condition.operator;
+                        row.querySelector(".filter-value").value = condition.value;
+                        
+                        filterRowCount++;
+                    }
+                }
+            }
+            
+            // Show notification that filter was applied
+            if (filename) {
+                showNotification(`Filter from "${filename}" has been applied`);
+            }
+        }
+
+        // Save current filter configuration for future use
+        function saveCurrentFilter() {
+            // Get all filter values
+            let fromDate = document.getElementById("from_date").value;
+            let toDate = document.getElementById("to_date").value;
+            let selectedChapters = [...document.querySelectorAll("#checkbox-container .option:checked")].map(cb => cb.value);
+            let selectedHsCodes = [...document.querySelectorAll("#hs-checkbox-container .option:checked")].map(cb => cb.value);
+            
+            // Get column filters
+            let columnFilters = [];
+            let filterRows = document.querySelectorAll(".column-filter-row");
+            
+            filterRows.forEach(row => {
+                let column = row.querySelector(".column-select").value;
+                let operator = row.querySelector(".operator-select").value;
+                let value = row.querySelector(".filter-value").value;
+                
+                if (column && operator && value) {
+                    let existingFilter = columnFilters.find(f => f.field === column);
+                    
+                    if (existingFilter) {
+                        existingFilter.conditions.push({ operator, value });
+                    } else {
+                        columnFilters.push({
+                            field: column,
+                            conditions: [{ operator, value }]
+                        });
+                    }
+                }
+            });
+            
+            // Check if any filters are applied
+            if (!fromDate && !toDate && selectedChapters.length === 0 && selectedHsCodes.length === 0 && columnFilters.length === 0) {
+                showNotification("No filters to save", "error");
+                return;
+            }
+            
+            // Prepare data for saving
+            let filterData = {
+                from_date: fromDate,
+                to_date: toDate,
+                chapters: selectedChapters,
+                hs_codes: selectedHsCodes,
+                columnFilters: columnFilters
+            };
+            
+            // Prompt for a filter name
+            let filterName = prompt("Enter a name for this filter:", "");
+            
+            if (filterName) {
+                // Send to server
+                fetch('/export/save_filter', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        name: filterName,
+                        filter_data: filterData
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Filter "${filterName}" saved successfully`);
+                    } else {
+                        showNotification(data.error || 'Failed to save filter', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving filter:', error);
+                    showNotification('Error saving filter. Please try again.', 'error');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

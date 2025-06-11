@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Status - Data Management System</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --secondary-dark: #059669;
+            --secondary-light: #34D399;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray: #9CA3AF;
+            --gray-light: #F3F4F6;
+            --gray-dark: #4B5563;
+            --border: #E5E7EB;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            --body-bg: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --transition: all 0.3s ease;
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Header & Navigation */
+        .app-header {
+            height: var(--header-height);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--dark);
+            text-decoration: none;
+        }
+
+        .app-header .logo i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        .app-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .app-nav .nav-link {
+            color: var(--gray-dark);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .app-nav .nav-link:hover {
+            color: var(--primary);
+            background-color: var(--gray-light);
+        }
+
+        .app-nav .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .app-nav .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Main Content */
+        .main-container {
+            padding-top: calc(var(--header-height) + 2rem);
+            padding-bottom: 3rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .page-subtitle {
+            font-weight: 400;
+            font-size: 1.125rem;
+            color: var(--gray-dark);
+            margin-bottom: 2.5rem;
+        }
+
+        /* Status Card */
+        .status-section {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .status-section h2 {
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-section h2 i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .progress-info #status-text {
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .progress-info #progress-text {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .progress-bar {
+            height: 1rem;
+            background-color: var(--gray-light);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* File Details Table */
+        .file-details {
+            margin-bottom: 2rem;
+        }
+
+        .file-details h3 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .file-table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .file-table th,
+        .file-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .file-table th {
+            background-color: var(--gray-light);
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .file-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status i {
+            margin-right: 0.5rem;
+        }
+
+        .status.processing {
+            color: var(--primary);
+        }
+
+        .status.processed {
+            color: var(--success);
+        }
+
+        .status.invalid {
+            color: var(--warning);
+        }
+
+        .status.skipped {
+            color: var(--gray);
+        }
+
+        .status.error {
+            color: var(--danger);
+        }
+
+        /* Error Container */
+        .error-container {
+            margin-bottom: 2rem;
+            background-color: #FEF2F2;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid #FEE2E2;
+            border-left: 4px solid var(--danger);
+        }
+
+        .error-container h3 {
+            margin-bottom: 1rem;
+            color: var(--danger);
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error-container h3 i {
+            margin-right: 0.5rem;
+        }
+
+        .error-container ul {
+            list-style: none;
+            padding-left: 1.5rem;
+        }
+
+        .error-container li {
+            padding: 0.5rem 0;
+            color: var(--dark);
+            position: relative;
+        }
+        
+        .error-container li::before {
+            content: "\f057";
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--danger);
+            position: absolute;
+            left: -1.5rem;
+        }
+
+        /* Buttons */
+        .buttons {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Footer */
+        .app-footer {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-dark);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            z-index: 99;
+            padding: 1rem;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .mobile-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .mobile-menu .nav-link {
+            display: block;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        .mobile-menu .nav-link:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .app-nav {
+                display: none;
+            }
+            
+            .status-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <a href="/" class="logo">
+            <i class="fas fa-database"></i>
+            <span>Data Management System</span>
+        </a>
+        
+        <nav class="app-nav">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/upload" class="nav-link active">File Upload</a>
+            <a href="/export" class="nav-link">Data Export</a>
+            <a href="/export/history" class="nav-link">Export History</a>
+            <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+        </nav>
+        
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/upload" class="nav-link active">File Upload</a>
+        <a href="/export" class="nav-link">Data Export</a>
+        <a href="/export/history" class="nav-link">Export History</a>
+        <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+    </div>
+
+    <main class="main-container">
+        <div class="container">
+            <h1 class="page-title">Excel File Processing</h1>
+            <p class="page-subtitle">Track the status of your file processing operation</p>
+
+            <!-- Processing Status Section -->
+            <section class="status-section" id="status-section">
+                <h2><i class="fas fa-tasks"></i> Processing Status</h2>
+                
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <span id="status-text">Preparing...</span>
+                        <span id="progress-text">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="file-details" id="file-details">
+                    <h3><i class="fas fa-file-alt"></i> File Processing Details</h3>
+                    <div class="file-table-container">
+                        <table class="file-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="file-details-body">
+                                <!-- File details will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="error-container" id="error-container">
+                    <h3><i class="fas fa-exclamation-circle"></i> Processing Errors</h3>
+                    <ul id="error-list"></ul>
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-primary" id="new-upload-btn">
+                        <i class="fas fa-upload"></i> Process New Files
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>Data Management System &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('show');
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const statusText = document.getElementById('status-text');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const newUploadBtn = document.getElementById('new-upload-btn');
+            const fileDetailsBody = document.getElementById('file-details-body');
+            const errorList = document.getElementById('error-list');
+            const errorContainer = document.getElementById('error-container');
+
+            // Get job ID from URL
+            const pathParts = window.location.pathname.split('/');
+            const currentJobId = pathParts[pathParts.length - 1];
+
+            // State
+            let pollingInterval = null;
+
+            // Initialize
+            errorContainer.style.display = 'none';
+
+            // Start polling when page loads
+            if (currentJobId) {
+                startPolling();
+            } else {
+                statusText.textContent = 'No job ID found';
+            }
+
+            function startPolling() {
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                }
+
+                statusText.textContent = 'Initializing...';
+                
+                pollingInterval = setInterval(() => {
+                    fetch(`/upload/job/${currentJobId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            updateJobStatus(data);
+                            
+                            if (data.status === 'completed') {
+                                clearInterval(pollingInterval);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error polling job status:', error);
+                        });
+                }, 1000);
+            }
+
+            function updateJobStatus(jobData) {
+                // Update status text
+                if (jobData.status === 'starting') {
+                    statusText.textContent = 'Preparing to process files...';
+                } else if (jobData.status === 'processing') {
+                    if (jobData.insertion_status === 'not_started') {
+                        statusText.textContent = 'Processing files...';
+                        // Hide progress during file validation
+                        progressBar.style.width = '0%';
+                        progressText.textContent = '';
+                    } else if (jobData.insertion_status === 'in_progress') {
+                        statusText.textContent = 'Inserting data into database...';
+                        // Show progress during data insertion
+                        if (jobData.total_rows > 0) {
+                            const percent = Math.round((jobData.rows_inserted / jobData.total_rows) * 100);
+                            progressBar.style.width = `${percent}%`;
+                            progressText.textContent = `${percent}%`;
+                        }
+                    }
+                } else if (jobData.status === 'completed') {
+                    statusText.textContent = 'Processing completed';
+                    if (jobData.total_rows > 0) {
+                        progressBar.style.width = '100%';
+                        progressText.textContent = '100%';
+                    }
+                }
+
+                // Update file details
+                updateFileDetails(jobData);
+            
+                // Update errors
+                updateErrors(jobData);
+            }
+            
+            function updateFileDetails(jobData) {
+                fileDetailsBody.innerHTML = '';
+
+                if (!jobData.file_details) return;
+
+                Object.entries(jobData.file_details).forEach(([fileName, details]) => {
+                    const row = document.createElement('tr');
+                    
+                    const fileCell = document.createElement('td');
+                    fileCell.textContent = fileName;
+                    
+                    const statusCell = document.createElement('td');
+                    statusCell.className = `status ${details.status}`;
+                    
+                    let statusIcon = '';
+                    let statusText = '';
+                    
+                    switch(details.status) {
+                        case 'processing':
+                            statusIcon = '<i class="fas fa-spinner fa-spin"></i>';
+                            statusText = 'Processing';
+                            break;
+                        case 'processed':
+                            statusIcon = '<i class="fas fa-check-circle"></i>';
+                            statusText = 'Valid';
+                            break;
+                        case 'invalid':
+                            statusIcon = '<i class="fas fa-exclamation-triangle"></i>';
+                            statusText = 'Invalid';
+                            break;
+                        case 'skipped':
+                            statusIcon = '<i class="fas fa-ban"></i>';
+                            statusText = 'Skipped';
+                            break;
+                        case 'error':
+                            statusIcon = '<i class="fas fa-times-circle"></i>';
+                            statusText = 'Error';
+                            break;
+                    }
+                    
+                    statusCell.innerHTML = `${statusIcon} ${statusText}`;
+                    
+                    const detailsCell = document.createElement('td');
+                    
+                    if (details.status === 'invalid') {
+                        if (details.missing && details.missing.length) {
+                            detailsCell.innerHTML += `<div>Missing columns: ${details.missing.join(', ')}</div>`;
+                        }
+                        if (details.extra && details.extra.length) {
+                            detailsCell.innerHTML += `<div>Extra columns: ${details.extra.join(', ')}</div>`;
+                        }
+                    } else if (details.status === 'skipped') {
+                        detailsCell.textContent = details.message || 'Duplicate file';
+                    } else if (details.status === 'error') {
+                        detailsCell.textContent = details.message || 'Unknown error';
+                    }
+                    
+                    row.appendChild(fileCell);
+                    row.appendChild(statusCell);
+                    row.appendChild(detailsCell);
+                    fileDetailsBody.appendChild(row);
+                });
+            }
+
+            function updateErrors(jobData) {
+                if (!jobData.errors || jobData.errors.length === 0) {
+                    errorContainer.style.display = 'none';
+                    return;
+                }
+                
+                errorContainer.style.display = 'block';
+                errorList.innerHTML = '';
+                
+                jobData.errors.forEach(error => {
+                    const li = document.createElement('li');
+                    li.textContent = error;
+                    errorList.appendChild(li);
+                });
+            }
+
+            // Return to upload form
+            newUploadBtn.addEventListener('click', function() {
+                window.location.href = '/upload';
+                
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

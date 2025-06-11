@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export History - Data Management System</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --secondary-dark: #059669;
+            --secondary-light: #34D399;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray: #9CA3AF;
+            --gray-light: #F3F4F6;
+            --gray-dark: #4B5563;
+            --border: #E5E7EB;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            --body-bg: #F1F5F9;
+            --card-bg: #FFFFFF;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --transition: all 0.3s ease;
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Header & Navigation */
+        .app-header {
+            height: var(--header-height);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--dark);
+            text-decoration: none;
+        }
+
+        .app-header .logo i {
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        .app-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .app-nav .nav-link {
+            color: var(--gray-dark);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .app-nav .nav-link:hover {
+            color: var(--primary);
+            background-color: var(--gray-light);
+        }
+
+        .app-nav .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .app-nav .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Main Content */
+        .main-container {
+            padding-top: calc(var(--header-height) + 2rem);
+            padding-bottom: 3rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .page-subtitle {
+            font-weight: 400;
+            font-size: 1.125rem;
+            color: var(--gray-dark);
+            margin-bottom: 2.5rem;
+        }
+
+        /* Cards */
+        .app-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            height: 100%;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--card-bg);
+            color: var(--dark);
+            font-size: 0.9375rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: var(--gray);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-light);
+            color: var(--gray-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--gray);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-info {
+            background-color: var(--gray-dark);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: var(--dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #e68a00;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        /* Filter details and table */
+        .filter-details {
+            background-color: var(--gray-light);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 0.75rem;
+            border: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .search-box {
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .filter-badge {
+            display: inline-block;
+            background-color: var(--gray-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--gray-dark);
+            font-weight: 500;
+        }
+
+        .filter-summary {
+            margin-bottom: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading:after {
+            content: "";
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 4px solid var(--gray-light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tables */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--gray-light);
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--gray-light);
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--gray-dark);
+            background-color: var(--gray-light);
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        .app-footer {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-dark);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            z-index: 99;
+            padding: 1rem;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .mobile-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .mobile-menu .nav-link {
+            display: block;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        .mobile-menu .nav-link:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .app-nav {
+                display: none;
+            }
+            
+            .header-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .header-section .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <a href="/" class="logo">
+            <i class="fas fa-database"></i>
+            <span>Data Management System</span>
+        </a>
+        
+        <nav class="app-nav">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/upload" class="nav-link">File Upload</a>
+            <a href="/export" class="nav-link">Data Export</a>
+            <a href="/export/history" class="nav-link active">Export History</a>
+            <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+        </nav>
+        
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/upload" class="nav-link">File Upload</a>
+        <a href="/export" class="nav-link">Data Export</a>
+        <a href="/export/history" class="nav-link active">Export History</a>
+        <a href="/upload/invalid_files" class="nav-link">Invalid Files</a>
+    </div>
+
+    <main class="main-container">
+        <div class="container">
+            <div class="header-section">
+                <h1 class="page-title">Export History</h1>
+                <a href="{{ url_for('export_index') }}" class="btn btn-danger">
+                    <i class="fas fa-arrow-left"></i> Back to Filters
+                </a>
+            </div>
+            
+            <div class="app-card">
+                <div class="card-body">
+                    <div class="form-group">
+                        <input type="text" id="searchBox" class="form-control search-box" placeholder="Search by filename or filter details...">
+                    </div>
+                    
+                    <div class="loading" id="loadingIndicator">
+                        <p>Loading export history...</p>
+                    </div>
+                    
+                    <div class="history-section">
+                        <div class="table-container">
+                            <table id="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>File Name</th>
+                                        <th>Created Date</th>
+                                        <th>Size</th>
+                                        <th>Rows</th>
+                                        <th>Filter Details</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for file in export_files %}
+                                    <tr class="history-row">
+                                        <td class="filename">{{ file.name }}</td>
+                                        <td>{{ file.created_date }}</td>
+                                        <td>{{ file.size }}</td>
+                                        <td>{{ file.rows }}</td>
+                                        <td>
+                                            <button onclick="toggleDetails('filter-{{ loop.index }}')" class="btn btn-info btn-sm">
+                                                <i class="fas fa-info-circle"></i> Show Details
+                                            </button>
+                                            <div id="filter-{{ loop.index }}" class="filter-details" style="display: none;">
+                                                {% if file.filter_data %}
+                                                    <div class="filter-summary">
+                                                        {% if file.filter_data.from_date and file.filter_data.to_date %}
+                                                        <span class="filter-badge">Date: {{ file.filter_data.from_date }} to {{ file.filter_data.to_date }}</span>
+                                                        {% endif %}
+                                                        
+                                                        {% if file.filter_data.chapters and file.filter_data.chapters|length > 0 %}
+                                                        <span class="filter-badge">Chapters: {{ file.filter_data.chapters|length }}</span>
+                                                        {% endif %}
+                                                        
+                                                        {% if file.filter_data.hs_codes and file.filter_data.hs_codes|length > 0 %}
+                                                        <span class="filter-badge">HS Codes: {{ file.filter_data.hs_codes|length }}</span>
+                                                        {% endif %}
+                                                        
+                                                        {% if file.filter_data.columnFilters and file.filter_data.columnFilters|length > 0 %}
+                                                        <span class="filter-badge">Column Filters: {{ file.filter_data.columnFilters|length }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    <ul>
+                                                        {% if file.filter_data.from_date and file.filter_data.to_date %}
+                                                        <li>Date Range: {{ file.filter_data.from_date }} to {{ file.filter_data.to_date }}</li>
+                                                        {% endif %}
+                                                        
+                                                        {% if file.filter_data.chapters and file.filter_data.chapters|length > 0 %}
+                                                        <li>
+                                                            Chapters: 
+                                                            {% if file.filter_data.chapters|length <= 5 %}
+                                                                {{ file.filter_data.chapters|join(', ') }}
+                                                            {% else %}
+                                                                {{ file.filter_data.chapters[:5]|join(', ') }} 
+                                                                <a href="#" onclick="showAllItems('chapters-{{ loop.index }}'); return false;">and {{ file.filter_data.chapters|length - 5 }} more...</a>
+                                                                <div id="chapters-{{ loop.index }}" style="display: none;">
+                                                                    {{ file.filter_data.chapters|join(', ') }}
+                                                                </div>
+                                                            {% endif %}
+                                                        </li>
+                                                        {% endif %}
+                                                        
+                                                        {% if file.filter_data.hs_codes and file.filter_data.hs_codes|length > 0 %}
+                                                        <li>
+                                                            HS Codes: 
+                                                            {% if file.filter_data.hs_codes|length <= 5 %}
+                                                                {{ file.filter_data.hs_codes|join(', ') }}
+                                                            {% else %}
+                                                                {{ file.filter_data.hs_codes[:5]|join(', ') }} 
+                                                                <a href="#" onclick="showAllItems('hscodes-{{ loop.index }}'); return false;">and {{ file.filter_data.hs_codes|length - 5 }} more...</a>
+                                                                <div id="hscodes-{{ loop.index }}" style="display: none;">
+                                                                    {{ file.filter_data.hs_codes|join(', ') }}
+                                                                </div>
+                                                            {% endif %}
+                                                        </li>
+                                                        {% endif %}
+                                                        
+                                                        {% if file.filter_data.columnFilters %}
+                                                        <li>Column Filters:
+                                                            <ul>
+                                                                {% for filter in file.filter_data.columnFilters %}
+                                                                <li>{{ filter.field_name }}:
+                                                                    {% for condition in filter.conditions %}
+                                                                    {{ condition.operator }} "{{ condition.value }}"{% if not loop.last %}, {% endif %}
+                                                                    {% endfor %}
+                                                                </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </li>
+                                                        {% endif %}
+                                                    </ul>
+                                                {% else %}
+                                                    <p>No filter details available</p>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('download_export', filename=file.name) }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                            {% if file.filter_id %}
+                                            <!-- <a href="{{ url_for('apply_filter', filter_id=file.filter_id) }}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-filter"></i> Reuse Filter
+                                            </a> -->
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if not export_files %}
+                        <div class="no-history" id="noHistory">
+                            <i class="fas fa-file-excel fa-3x mb-3" style="color: var(--gray);"></i>
+                            <p>No export history found.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>Data Management System &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('show');
+        }
+        
+        // Toggle the filter details visibility
+        function toggleDetails(detailsId) {
+            const details = document.getElementById(detailsId);
+            if (details.style.display === "none") {
+                details.style.display = "block";
+            } else {
+                details.style.display = "none";
+            }
+        }
+        
+        // Show all items when "and X more" is clicked
+        function showAllItems(itemsId) {
+            const itemsElement = document.getElementById(itemsId);
+            if (itemsElement) {
+                itemsElement.style.display = itemsElement.style.display === "none" ? "block" : "none";
+            }
+        }
+        
+        // Search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBox = document.getElementById('searchBox');
+            if (searchBox) {
+                searchBox.addEventListener('keyup', filterTable);
+            }
+            
+            // Check if we need to refresh data
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('refresh') === 'true') {
+                refreshHistory();
+            }
+        });
+        
+        function filterTable() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const rows = document.querySelectorAll('.history-row');
+            
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const filename = row.querySelector('.filename').textContent.toLowerCase();
+                const detailsButton = row.querySelector('.btn-info');
+                const detailsId = detailsButton.getAttribute('onclick').match(/'([^']+)'/)[1];
+                const details = document.getElementById(detailsId).textContent.toLowerCase();
+                
+                if (filename.includes(searchTerm) || details.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            const noHistory = document.getElementById('noHistory');
+            if (noHistory) {
+                noHistory.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+        
+        // Function to refresh history data
+        function refreshHistory() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'block';
+            }
+            
+            // Reload the page after a slight delay to allow backend to refresh data
+            setTimeout(() => {
+                window.location.href = '/export/history';
+            }, 500);
+        }
+    </script>
+</body>
+</html>
