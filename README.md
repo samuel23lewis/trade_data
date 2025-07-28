@@ -1,1 +1,10 @@
 # trade_data
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20105053.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20105202.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20105227.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20151153.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20151204.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20162241.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20162338.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20162346.png?raw=true)
+![image](https://github.com/samuel23lewis/trade_data/blob/main/Screenshot%202025-07-28%20162356.png?raw=true)
